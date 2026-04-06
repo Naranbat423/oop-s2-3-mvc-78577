@@ -1,0 +1,21 @@
+@model IEnumerable<VgcCollege.Domain.Models.Course>
+
+@{
+    ViewData["Title"] = "Select Course";
+}
+
+<h1>Select a Course for Gradebook</h1>
+
+<table class="table">
+    <thead>
+    <tr><th>Course Name</th><th></th></thead>
+    <tbody>
+    @foreach (var course in Model)
+    {
+        <td>
+    <td>@course.Name</td>
+    <td><a asp-action="Assignments" asp-route-courseId="@course.Id" class="btn btn-primary">View Assignments</a></td>
+    </td>
+    }
+    </tbody>
+</table>

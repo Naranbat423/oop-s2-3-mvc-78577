@@ -1,0 +1,48 @@
+@model IEnumerable<VgcCollege.Domain.Models.Exam>
+
+@{
+    ViewData["Title"] = "Release Exam Results";
+}
+
+<h1>Release Exam Results</h1>
+
+<p>Click the button to toggle the release status of each exam. Students will see results only when released.</p>
+
+<table class="table table-striped">
+    <thead>
+    <tr>
+    <th>Course</th>
+    <th>Exam Title</th>
+    <th>Date</th>
+    <th>Current Status</th>
+    <th>Action</th>
+    </thead>
+    <tbody>
+    @foreach (var exam in Model)
+    {
+        <tr>
+            <td>@exam.Course?.Name</td>
+            <td>@exam.Title</td>
+            <td>@exam.Date.ToShortDateString()</td>
+            <td>
+                @if (exam.ResultsReleased)
+                {
+                    <span class="badge bg-success">Released</span>
+                }
+                else
+                {
+                    <span class="badge bg-warning text-dark">Provisional</span>
+                }
+            </td>
+            <td>
+                <form asp-action="ReleaseResults" asp-route-id="@exam.Id" method="post" style="display:inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-sm btn-primary">
+                        @(exam.ResultsReleased ? "Make Provisional" : "Release Results")
+                    </button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

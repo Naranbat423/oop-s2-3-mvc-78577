@@ -25,6 +25,15 @@ public class ExamsController : Controller
         return View(exams);
     }
 
+    // GET: Exams/ReleaseResults (list exams to release)
+    public async Task<IActionResult> ReleaseResults()
+    {
+        var exams = await _context.Exams
+            .Include(e => e.Course)
+            .ToListAsync();
+        return View(exams);
+    }
+
     // POST: Exams/ReleaseResults/5
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -35,6 +44,8 @@ public class ExamsController : Controller
 
         exam.ResultsReleased = !exam.ResultsReleased; // toggle
         await _context.SaveChangesAsync();
-        return RedirectToAction(nameof(Index));
+
+        // Redirect back to the ReleaseResults list
+        return RedirectToAction(nameof(ReleaseResults));
     }
 }

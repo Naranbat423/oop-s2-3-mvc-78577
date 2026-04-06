@@ -67,8 +67,12 @@
                             }
                             @if (User.IsInRole("Faculty"))
                             {
+                                <!-- Direct links for Faculty -->
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-area="" asp-controller="Attendance" asp-action="SelectCourse">Attendance</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Gradebook" asp-action="SelectCourse">Gradebook</a>
                                 </li>
                                 <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle text-dark" href="#" id="facultyDropdown" role="button" data-bs-toggle="dropdown">
