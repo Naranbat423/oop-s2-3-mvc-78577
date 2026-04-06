@@ -1,0 +1,16 @@
+## Ignore build outputs
+bin/
+obj/
+
+## Ignore user settings
+.DS_Store
+*.user
+*.suo
+
+## Ignore database files
+*.db
+*.db-shm
+*.db-wal
+
+## Ignore logs
+logs/

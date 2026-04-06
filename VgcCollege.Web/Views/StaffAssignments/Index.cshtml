@@ -1,0 +1,32 @@
+@model IEnumerable<VgcCollege.Domain.Models.FacultyCourse>
+
+@{
+    ViewData["Title"] = "Staff Assignments";
+}
+
+<h1>Staff Assignments</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Assign Faculty to Course</a>
+</p>
+
+<table class="table table-striped">
+<thead>
+<tr>
+<th>Faculty</th>
+<th>Course</th>
+<th>Actions</th>
+</thead>
+<tbody>
+@foreach (var item in Model)
+{
+    <tr>
+        <td>@item.Faculty?.Name</td>
+        <td>@item.Course?.Name</td>
+        <td>
+            <a asp-action="Delete" asp-route-facultyId="@item.FacultyProfileId" asp-route-courseId="@item.CourseId" class="btn btn-sm btn-danger">Remove</a>
+        </td>
+    </tr>
+}
+</tbody>
+</table>

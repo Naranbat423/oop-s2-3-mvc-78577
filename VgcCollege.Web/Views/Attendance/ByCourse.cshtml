@@ -1,0 +1,50 @@
+@model IEnumerable<VgcCollege.Domain.Models.CourseEnrolment>
+
+@{
+    ViewData["Title"] = "Attendance - " + ViewBag.CourseName;
+}
+
+<h1>Attendance for @ViewBag.CourseName</h1>
+
+<form method="get" asp-action="ByCourse" class="mb-3">
+    <input type="hidden" name="courseId" value="@ViewBag.CourseId" />
+    <div class="row">
+        <div class="col-md-3">
+            <label>Select Week</label>
+            <select name="weekNumber" class="form-control" asp-items="@(new SelectList(ViewBag.AllWeeks, ViewBag.WeekNumber))">
+                <option value="">-- Select Week --</option>
+            </select>
+        </div>
+        <div class="col-md-2 align-self-end">
+            <button type="submit" class="btn btn-primary">Load</button>
+        </div>
+    </div>
+</form>
+
+<form method="post" asp-action="Save">
+    <input type="hidden" name="courseId" value="@ViewBag.CourseId" />
+    <input type="hidden" name="weekNumber" value="@ViewBag.WeekNumber" />
+    <table class="table table-striped">
+        <thead>
+        <tr>
+        <th>Student</th>
+        <th>Present?</th>
+        </thead>
+        <tbody>
+        @foreach (var enrolment in Model)
+        {
+            var existing = enrolment.AttendanceRecords.FirstOrDefault(a => a.WeekNumber == ViewBag.WeekNumber);
+            var isPresent = existing?.Present ?? false;
+            <tr>
+                <td>@enrolment.Student?.Name</td>
+                <td>
+                    <input type="checkbox" name="attendance[@enrolment.Id]" value="true" @(isPresent ? "checked" : "") />
+                    <input type="hidden" name="attendance[@enrolment.Id]" value="false" />
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    <button type="submit" class="btn btn-success">Save Attendance</button>
+    <a asp-controller="Courses" asp-action="Index" class="btn btn-secondary">Back to Courses</a>
+</form>

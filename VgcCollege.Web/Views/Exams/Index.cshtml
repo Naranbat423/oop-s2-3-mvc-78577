@@ -1,0 +1,48 @@
+@model IEnumerable<VgcCollege.Domain.Models.Exam>
+
+@{
+    ViewData["Title"] = "Exams";
+}
+
+<h1>Exams</h1>
+
+<table class="table table-striped">
+    <thead>
+    <tr>
+    <th>Course</th>
+    <th>Title</th>
+    <th>Date</th>
+    <th>Max Score</th>
+    <th>Results Released</th>
+    <th>Actions</th>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.Course?.Name</td>
+            <td>@item.Title</td>
+            <td>@item.Date.ToShortDateString()</td>
+            <td>@item.MaxScore</td>
+            <td>
+                @if (item.ResultsReleased)
+                {
+                    <span class="badge bg-success">Released</span>
+                }
+                else
+                {
+                    <span class="badge bg-warning text-dark">Provisional</span>
+                }
+            </td>
+            <td>
+                <form asp-action="ReleaseResults" asp-route-id="@item.Id" method="post" style="display:inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-sm btn-primary">
+                        @(item.ResultsReleased ? "Make Provisional" : "Release Results")
+                    </button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
