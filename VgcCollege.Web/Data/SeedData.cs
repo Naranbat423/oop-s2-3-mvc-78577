@@ -104,16 +104,22 @@ public static class SeedData
             await context.FacultyProfiles.AddAsync(facultyProfile);
             await context.SaveChangesAsync();
 
-            // Assign faculty to all courses
+            // FIXED: Assign faculty only to first two courses
+            // (same courses students are enrolled in)
             var allCourses = await context.Courses.ToListAsync();
-            foreach (var course in allCourses)
+            var facultyCourses = allCourses.Take(2).ToList();
+            await context.FacultyCourses.AddAsync(new FacultyCourse
             {
-                await context.FacultyCourses.AddAsync(new FacultyCourse
-                {
-                    FacultyProfileId = facultyProfile.Id,
-                    CourseId = course.Id
-                });
-            }
+                FacultyProfileId = facultyProfile.Id,
+                CourseId = facultyCourses[0].Id,
+                IsTutor = true  // Tutor on first course — can see student contacts
+            });
+            await context.FacultyCourses.AddAsync(new FacultyCourse
+            {
+                FacultyProfileId = facultyProfile.Id,
+                CourseId = facultyCourses[1].Id,
+                IsTutor = false
+            });
             await context.SaveChangesAsync();
         }
 
@@ -131,7 +137,7 @@ public static class SeedData
             await context.SaveChangesAsync();
         }
 
-        // Enrolments
+        // Enrolments — students enrolled in first two courses
         if (!context.CourseEnrolments.Any())
         {
             var students = await context.StudentProfiles.ToListAsync();
@@ -180,7 +186,7 @@ public static class SeedData
             await context.SaveChangesAsync();
         }
 
-        // Assignments and results (simplified)
+        // Assignments and results
         if (!context.Assignments.Any())
         {
             var courses = await context.Courses.ToListAsync();
