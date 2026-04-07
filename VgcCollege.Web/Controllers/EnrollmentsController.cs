@@ -63,7 +63,7 @@ public class EnrollmentsController : Controller
             if (duplicate)
                 errors.Add("This student is already enrolled in this course.");
         }
-
+        
         if (errors.Any())
         {
             foreach (var err in errors)
