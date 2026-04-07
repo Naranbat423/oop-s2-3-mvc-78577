@@ -1,0 +1,30 @@
+@* Save this as Details.cshtml *@
+@using VgcCollege.Domain.Models
+@model CourseEnrolment
+@{
+    ViewData["Title"] = "Enrolment Details";
+}
+
+<h2>Enrollment Details</h2>
+<hr />
+
+<dl class="row">
+    <dt class="col-sm-3">Student</dt>
+    <dd class="col-sm-9">@Model.Student.Name (@Model.Student.StudentNumber)</dd>
+
+    <dt class="col-sm-3">Course</dt>
+    <dd class="col-sm-9">@Model.Course.Name</dd>
+
+    <dt class="col-sm-3">Enrol Date</dt>
+    <dd class="col-sm-9">@Model.EnrolDate.ToString("dd MMM yyyy")</dd>
+
+    <dt class="col-sm-3">Status</dt>
+    <dd class="col-sm-9">
+        <span class="badge bg-@(Model.Status == "Active" ? "success" : "secondary")">@Model.Status</span>
+    </dd>
+</dl>
+
+<div class="mt-3">
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+    <a asp-action="Index" class="btn btn-secondary ms-2">Back to List</a>
+</div>

@@ -19,7 +19,9 @@ public class StudentsController : Controller
     // GET: Students
     public async Task<IActionResult> Index()
     {
-        var students = await _context.StudentProfiles.ToListAsync();
+        var students = await _context.StudentProfiles
+            .OrderBy(s => s.Name)
+            .ToListAsync();
         return View(students);
     }
 
@@ -27,30 +29,31 @@ public class StudentsController : Controller
     public async Task<IActionResult> Details(int? id)
     {
         if (id == null) return NotFound();
-
-        var student = await _context.StudentProfiles
-            .FirstOrDefaultAsync(s => s.Id == id);
+        var student = await _context.StudentProfiles.FirstOrDefaultAsync(s => s.Id == id);
         if (student == null) return NotFound();
-
         return View(student);
     }
 
     // GET: Students/Create
-    public IActionResult Create()
-    {
-        return View();
-    }
+    public IActionResult Create() => View();
 
     // POST: Students/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("Name,Email,Phone,Address,DOB,StudentNumber")] StudentProfile student)
+    public async Task<IActionResult> Create([Bind("StudentNumber,Name,Email,Phone,Address,DOB")] StudentProfile student)
     {
+        // Navigation properties are not posted — remove them from ModelState
+        ModelState.Remove("IdentityUser");
+        ModelState.Remove("IdentityUserId");
+        ModelState.Remove("Enrolments");
+        ModelState.Remove("AssignmentResults");
+        ModelState.Remove("ExamResults");
+
         if (ModelState.IsValid)
         {
-            // Note: IdentityUserId is not set here – that will be linked when the user registers.
-            // For admin-created students, you may later add a way to create an IdentityUser as well.
-            // For simplicity, we just create the profile; the IdentityUser can be linked later.
+            // IdentityUserId left empty — admin creates profile,
+            // can be linked to a login account later via seed or manually
+            student.IdentityUserId = "";
             _context.Add(student);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
@@ -62,7 +65,6 @@ public class StudentsController : Controller
     public async Task<IActionResult> Edit(int? id)
     {
         if (id == null) return NotFound();
-
         var student = await _context.StudentProfiles.FindAsync(id);
         if (student == null) return NotFound();
         return View(student);
@@ -71,9 +73,14 @@ public class StudentsController : Controller
     // POST: Students/Edit/5
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Email,Phone,Address,DOB,StudentNumber")] StudentProfile student)
+    public async Task<IActionResult> Edit(int id, [Bind("Id,IdentityUserId,StudentNumber,Name,Email,Phone,Address,DOB")] StudentProfile student)
     {
         if (id != student.Id) return NotFound();
+
+        ModelState.Remove("IdentityUser");
+        ModelState.Remove("Enrolments");
+        ModelState.Remove("AssignmentResults");
+        ModelState.Remove("ExamResults");
 
         if (ModelState.IsValid)
         {
@@ -84,7 +91,7 @@ public class StudentsController : Controller
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!StudentExists(student.Id)) return NotFound();
+                if (!_context.StudentProfiles.Any(s => s.Id == student.Id)) return NotFound();
                 else throw;
             }
             return RedirectToAction(nameof(Index));
@@ -96,11 +103,8 @@ public class StudentsController : Controller
     public async Task<IActionResult> Delete(int? id)
     {
         if (id == null) return NotFound();
-
-        var student = await _context.StudentProfiles
-            .FirstOrDefaultAsync(s => s.Id == id);
+        var student = await _context.StudentProfiles.FirstOrDefaultAsync(s => s.Id == id);
         if (student == null) return NotFound();
-
         return View(student);
     }
 
@@ -116,10 +120,5 @@ public class StudentsController : Controller
             await _context.SaveChangesAsync();
         }
         return RedirectToAction(nameof(Index));
-    }
-
-    private bool StudentExists(int id)
-    {
-        return _context.StudentProfiles.Any(e => e.Id == id);
     }
 }

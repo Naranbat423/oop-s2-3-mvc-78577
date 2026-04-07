@@ -2,49 +2,81 @@
 
 @{
     ViewData["Title"] = "Attendance - " + ViewBag.CourseName;
+    int currentWeek = (int)ViewBag.WeekNumber;
+    var allWeeks = ViewBag.AllWeeks as List<int> ?? new List<int>();
 }
 
-<h1>Attendance for @ViewBag.CourseName</h1>
+<h2>Attendance — @ViewBag.CourseName</h2>
+<p class="text-muted">Week @currentWeek</p>
 
-<form method="get" asp-action="ByCourse" class="mb-3">
+@* Week selector *@
+<form method="get" asp-action="ByCourse" class="mb-4">
     <input type="hidden" name="courseId" value="@ViewBag.CourseId" />
-    <div class="row">
-        <div class="col-md-3">
-            <label>Select Week</label>
-            <select name="weekNumber" class="form-control" asp-items="@(new SelectList(ViewBag.AllWeeks, ViewBag.WeekNumber))">
-                <option value="">-- Select Week --</option>
+    <div class="row g-2 align-items-end">
+        <div class="col-auto">
+            <label class="form-label">Select Week</label>
+            <select name="weekNumber" class="form-select">
+                @foreach (int w in allWeeks)
+                {
+                    if (w == currentWeek)
+                    {
+                        <option value="@w" selected="selected">Week @w</option>
+                    }
+                    else
+                    {
+                        <option value="@w">Week @w</option>
+                    }
+                }
             </select>
         </div>
-        <div class="col-md-2 align-self-end">
+        <div class="col-auto">
             <button type="submit" class="btn btn-primary">Load</button>
         </div>
     </div>
 </form>
 
+@* Attendance form *@
 <form method="post" asp-action="Save">
+    @Html.AntiForgeryToken()
     <input type="hidden" name="courseId" value="@ViewBag.CourseId" />
-    <input type="hidden" name="weekNumber" value="@ViewBag.WeekNumber" />
-    <table class="table table-striped">
-        <thead>
-        <tr>
-        <th>Student</th>
-        <th>Present?</th>
+    <input type="hidden" name="weekNumber" value="@currentWeek" />
+
+    @* Send all enrolment IDs so controller knows the full list *@
+    @foreach (var enrolment in Model)
+    {
+        <input type="hidden" name="allEnrolmentIds" value="@enrolment.Id" />
+    }
+
+    <table class="table table-bordered table-sm">
+        <thead class="table-dark">
+            <tr>
+                <th>Student</th>
+                <th class="text-center">Present?</th>
+            </tr>
         </thead>
         <tbody>
-        @foreach (var enrolment in Model)
-        {
-            var existing = enrolment.AttendanceRecords.FirstOrDefault(a => a.WeekNumber == ViewBag.WeekNumber);
-            var isPresent = existing?.Present ?? false;
-            <tr>
-                <td>@enrolment.Student?.Name</td>
-                <td>
-                    <input type="checkbox" name="attendance[@enrolment.Id]" value="true" @(isPresent ? "checked" : "") />
-                    <input type="hidden" name="attendance[@enrolment.Id]" value="false" />
-                </td>
-            </tr>
-        }
+            @foreach (var enrolment in Model)
+            {
+                var existing = enrolment.AttendanceRecords
+                    .FirstOrDefault(a => a.WeekNumber == currentWeek);
+                var isPresent = existing?.Present ?? false;
+                <tr>
+                    <td>@enrolment.Student?.Name</td>
+                    <td class="text-center">
+                        @if (isPresent)
+                        {
+                            <input type="checkbox" name="presentIds" value="@enrolment.Id" class="form-check-input" checked="checked" />
+                        }
+                        else
+                        {
+                            <input type="checkbox" name="presentIds" value="@enrolment.Id" class="form-check-input" />
+                        }
+                    </td>
+                </tr>
+            }
         </tbody>
     </table>
+
     <button type="submit" class="btn btn-success">Save Attendance</button>
-    <a asp-controller="Courses" asp-action="Index" class="btn btn-secondary">Back to Courses</a>
+    <a asp-action="SelectCourse" class="btn btn-secondary ms-2">Back to Courses</a>
 </form>

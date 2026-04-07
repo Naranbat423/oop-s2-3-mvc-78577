@@ -1,0 +1,38 @@
+@using VgcCollege.Domain.Models
+@model StudentProfile
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<h2>My Profile</h2>
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <dl class="row">
+            <dt class="col-sm-4">Student Number</dt>
+            <dd class="col-sm-8">@Model.StudentNumber</dd>
+
+            <dt class="col-sm-4">Full Name</dt>
+            <dd class="col-sm-8">@Model.Name</dd>
+
+            <dt class="col-sm-4">Email</dt>
+            <dd class="col-sm-8">@Model.Email</dd>
+
+            <dt class="col-sm-4">Phone</dt>
+            <dd class="col-sm-8">@(Model.Phone ?? "—")</dd>
+
+            <dt class="col-sm-4">Address</dt>
+            <dd class="col-sm-8">@(Model.Address ?? "—")</dd>
+
+            <dt class="col-sm-4">Date of Birth</dt>
+            <dd class="col-sm-8">@(Model.DOB.HasValue ? Model.DOB.Value.ToString("dd MMM yyyy") : "—")</dd>
+        </dl>
+    </div>
+</div>
+
+<hr />
+<div class="d-flex gap-2 mt-3">
+    <a asp-controller="Student" asp-action="MyGrades" class="btn btn-primary">📊 My Grades</a>
+    <a asp-controller="Student" asp-action="MyAttendance" class="btn btn-success">✅ My Attendance</a>
+</div>

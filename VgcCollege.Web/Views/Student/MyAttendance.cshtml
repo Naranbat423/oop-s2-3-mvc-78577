@@ -1,0 +1,73 @@
+@using VgcCollege.Domain.Models
+@model List<CourseEnrolment>
+@{
+    ViewData["Title"] = "My Attendance";
+    var studentName = ViewBag.StudentName as string ?? "Student";
+}
+
+<h2>My Attendance</h2>
+<p class="text-muted">Welcome, @studentName</p>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">You are not currently enrolled in any courses.</div>
+}
+else
+{
+    foreach (var enrolment in Model)
+    {
+        var records = enrolment.AttendanceRecords.OrderBy(a => a.WeekNumber).ToList();
+        var totalWeeks = records.Count;
+        var present = records.Count(a => a.Present);
+        var pct = totalWeeks > 0 ? (present * 100.0 / totalWeeks) : 0;
+        var badgeColour = pct >= 80 ? "success" : pct >= 60 ? "warning" : "danger";
+
+        <div class="card mt-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>@enrolment.Course.Name</strong>
+                <span class="badge bg-@badgeColour">
+                    @present / @totalWeeks weeks attended (@pct.ToString("F0")%)
+                </span>
+            </div>
+            <div class="card-body p-0">
+                @if (!records.Any())
+                {
+                    <p class="p-3 mb-0 text-muted">No attendance recorded yet.</p>
+                }
+                else
+                {
+                    <table class="table table-sm table-bordered mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Week</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var record in records)
+                            {
+                                <tr>
+                                    <td>Week @record.WeekNumber</td>
+                                    <td>
+                                        @if (record.Present)
+                                        {
+                                            <span class="text-success fw-bold">✓ Present</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-danger">✗ Absent</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    }
+}
+
+<div class="mt-4">
+    <a asp-controller="Student" asp-action="MyProfile" class="btn btn-outline-secondary">← Back to My Profile</a>
+</div>

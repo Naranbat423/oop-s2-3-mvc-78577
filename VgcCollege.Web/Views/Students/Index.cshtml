@@ -1,38 +1,45 @@
-@model IEnumerable<VgcCollege.Domain.Models.StudentProfile>
-
+@using VgcCollege.Domain.Models
+@model List<StudentProfile>
 @{
-    ViewData["Title"] = "Students";
+    ViewData["Title"] = "All Students";
 }
 
-<h1>Students</h1>
-
+<h2>All Students</h2>
 <p>
-    <a asp-action="Create" class="btn btn-primary">Create New Student</a>
+    <a asp-action="Create" class="btn btn-primary">+ Add Student</a>
 </p>
 
-<table class="table table-striped">
-    <thead>
-    <tr>
-    <th>Name</th>
-    <th>Email</th>
-    <th>Phone</th>
-    <th>Student Number</th>
-    <th>Actions</th>
-    </thead>
-    <tbody>
-    @foreach (var item in Model)
-    {
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No students found.</div>
+}
+else
+{
+    <table class="table table-bordered table-sm table-hover">
+        <thead class="table-dark">
         <tr>
-            <td>@item.Name</td>
-            <td>@item.Email</td>
-            <td>@item.Phone</td>
-            <td>@item.StudentNumber</td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
-                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a>
-                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Delete</a>
-            </td>
+            <th>Student Number</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Actions</th>
         </tr>
-    }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+        @foreach (var s in Model)
+        {
+            <tr>
+                <td>@s.StudentNumber</td>
+                <td>@s.Name</td>
+                <td>@s.Email</td>
+                <td>@s.Phone</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@s.Id" class="btn btn-sm btn-info">Details</a>
+                    <a asp-action="Edit" asp-route-id="@s.Id" class="btn btn-sm btn-warning">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@s.Id" class="btn btn-sm btn-danger">Delete</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

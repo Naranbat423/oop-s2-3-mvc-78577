@@ -1,2 +1,69 @@
-<h1>My Students</h1>
-<p>List of students will appear here.</p>
+@using VgcCollege.Domain.Models
+@model List<CourseEnrolment>
+@{
+    ViewData["Title"] = "My Students";
+    var tutorCourseIds = ViewBag.TutorCourseIds as List<int> ?? new();
+    var facultyName = ViewBag.FacultyName as string ?? "Faculty";
+}
+
+<h2>My Students</h2>
+<p class="text-muted">Logged in as: @facultyName</p>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No students are currently enrolled in your courses.</div>
+}
+else
+{
+    var byCourse = Model.GroupBy(e => e.Course.Name);
+    foreach (var group in byCourse)
+    {
+        <h4 class="mt-4">@group.Key</h4>
+        <table class="table table-bordered table-sm">
+            <thead class="table-light">
+                <tr>
+                    <th>Student Name</th>
+                    <th>Student Number</th>
+                    <th>Enrolled</th>
+                    <th>Status</th>
+                    <th>Contact Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var enrolment in group)
+                {
+                    <tr>
+                        <td>@enrolment.Student.Name</td>
+                        <td>@enrolment.Student.StudentNumber</td>
+                        <td>@enrolment.EnrolDate.ToString("dd MMM yyyy")</td>
+                        <td>
+                            <span class="badge bg-@(enrolment.Status == "Active" ? "success" : "secondary")">
+                                @enrolment.Status
+                            </span>
+                        </td>
+                        <td>
+                            @if (tutorCourseIds.Contains(enrolment.CourseId))
+                            {
+                                <a asp-controller="Faculty"
+                                   asp-action="StudentContact"
+                                   asp-route-studentId="@enrolment.StudentProfileId"
+                                   asp-route-courseId="@enrolment.CourseId"
+                                   class="btn btn-sm btn-outline-primary">
+                                    View Contact
+                                </a>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">Tutor access only</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+<div class="mt-4">
+    <a asp-controller="Gradebook" asp-action="SelectCourse" class="btn btn-primary">Go to Gradebook</a>
+</div>

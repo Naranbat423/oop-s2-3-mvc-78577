@@ -1,23 +1,25 @@
-@model VgcCollege.Domain.Models.FacultyCourse
-
+@using VgcCollege.Domain.Models
+@model FacultyCourse
 @{
     ViewData["Title"] = "Assign Faculty to Course";
 }
 
-<h1>Assign Faculty to Course</h1>
-
+<h2>Assign Faculty to Course</h2>
 <hr />
+
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-5">
         <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
             <div class="form-group mb-3">
-                <label asp-for="FacultyProfileId" class="control-label">Faculty</label>
+                <label asp-for="FacultyProfileId" class="control-label">Faculty Member</label>
                 <select asp-for="FacultyProfileId" class="form-control" asp-items="ViewBag.FacultyId">
                     <option value="">-- Select Faculty --</option>
                 </select>
                 <span asp-validation-for="FacultyProfileId" class="text-danger"></span>
             </div>
+
             <div class="form-group mb-3">
                 <label asp-for="CourseId" class="control-label">Course</label>
                 <select asp-for="CourseId" class="form-control" asp-items="ViewBag.CourseId">
@@ -25,9 +27,19 @@
                 </select>
                 <span asp-validation-for="CourseId" class="text-danger"></span>
             </div>
-            <div class="form-group">
+
+            <div class="form-group mb-3">
+                <div class="form-check">
+                    <input asp-for="IsTutor" class="form-check-input" type="checkbox" />
+                    <label asp-for="IsTutor" class="form-check-label">
+                        Is Tutor <small class="text-muted">(Tutors can view student contact details)</small>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group mt-3">
                 <input type="submit" value="Assign" class="btn btn-primary" />
-                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+                <a asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
             </div>
         </form>
     </div>

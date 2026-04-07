@@ -1,0 +1,110 @@
+@using VgcCollege.Domain.Models
+@{
+    ViewData["Title"] = "My Grades";
+    var assignmentResults = ViewBag.AssignmentResults as List<AssignmentResult> ?? new();
+    var examResults = ViewBag.ExamResults as List<ExamResult> ?? new();
+    var studentName = ViewBag.StudentName as string ?? "Student";
+}
+
+<h2>My Grades</h2>
+<p class="text-muted">Welcome, @studentName</p>
+
+<h4 class="mt-4">Assignment Results</h4>
+
+@if (!assignmentResults.Any())
+{
+    <div class="alert alert-info">No assignment results recorded yet.</div>
+}
+else
+{
+    var byCourse = assignmentResults.GroupBy(r => r.Assignment.Course.Name);
+    foreach (var group in byCourse)
+    {
+        <h5 class="mt-3">@group.Key</h5>
+        <table class="table table-bordered table-sm">
+            <thead class="table-light">
+                <tr>
+                    <th>Assignment</th>
+                    <th>Due Date</th>
+                    <th>Score</th>
+                    <th>Max Score</th>
+                    <th>Percentage</th>
+                    <th>Feedback</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var result in group)
+                {
+                    var pct = result.Assignment.MaxScore > 0
+                        ? (result.Score * 100.0 / result.Assignment.MaxScore)
+                        : 0;
+                    <tr class="@(pct >= 40 ? "" : "table-danger")">
+                        <td>@result.Assignment.Title</td>
+                        <td>@result.Assignment.DueDate.ToString("dd MMM yyyy")</td>
+                        <td>@result.Score</td>
+                        <td>@result.Assignment.MaxScore</td>
+                        <td>@pct.ToString("F1")%</td>
+                        <td>@(string.IsNullOrWhiteSpace(result.Feedback) ? "—" : result.Feedback)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+<h4 class="mt-5">Exam Results</h4>
+<p class="text-muted small">Only released results are shown. Provisional results are hidden until your lecturer releases them.</p>
+
+@if (!examResults.Any())
+{
+    <div class="alert alert-info">No released exam results yet.</div>
+}
+else
+{
+    var byExamCourse = examResults.GroupBy(r => r.Exam.Course.Name);
+    foreach (var group in byExamCourse)
+    {
+        <h5 class="mt-3">@group.Key</h5>
+        <table class="table table-bordered table-sm">
+            <thead class="table-light">
+                <tr>
+                    <th>Exam</th>
+                    <th>Date</th>
+                    <th>Score</th>
+                    <th>Max Score</th>
+                    <th>Percentage</th>
+                    <th>Grade</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var result in group)
+                {
+                    var pct = result.Exam.MaxScore > 0
+                        ? (result.Score * 100.0 / result.Exam.MaxScore)
+                        : 0;
+                    <tr class="@(pct >= 40 ? "" : "table-danger")">
+                        <td>@result.Exam.Title</td>
+                        <td>@result.Exam.Date.ToString("dd MMM yyyy")</td>
+                        <td>@result.Score</td>
+                        <td>@result.Exam.MaxScore</td>
+                        <td>@pct.ToString("F1")%</td>
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(result.Grade))
+                            {
+                                <span class="badge bg-secondary">@result.Grade</span>
+                            }
+                            else
+                            {
+                                <span>—</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+<div class="mt-4">
+    <a asp-controller="Student" asp-action="MyProfile" class="btn btn-outline-secondary">← Back to My Profile</a>
+</div>

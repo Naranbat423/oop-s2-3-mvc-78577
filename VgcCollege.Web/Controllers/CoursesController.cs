@@ -51,12 +51,21 @@ public class CoursesController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create([Bind("Name,BranchId,StartDate,EndDate")] Course course)
     {
+        // Navigation properties are not submitted by the form — remove their
+        // ModelState errors so IsValid is not blocked by them
+        ModelState.Remove("Branch");
+        ModelState.Remove("Enrolments");
+        ModelState.Remove("Assignments");
+        ModelState.Remove("Exams");
+        ModelState.Remove("FacultyCourses");
+
         if (ModelState.IsValid)
         {
             _context.Add(course);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
         ViewBag.BranchId = new SelectList(await _context.Branches.ToListAsync(), "Id", "Name", course.BranchId);
         return View(course);
     }
@@ -80,6 +89,13 @@ public class CoursesController : Controller
     {
         if (id != course.Id) return NotFound();
 
+        // Same fix — remove navigation property errors from ModelState
+        ModelState.Remove("Branch");
+        ModelState.Remove("Enrolments");
+        ModelState.Remove("Assignments");
+        ModelState.Remove("Exams");
+        ModelState.Remove("FacultyCourses");
+
         if (ModelState.IsValid)
         {
             try
@@ -94,6 +110,7 @@ public class CoursesController : Controller
             }
             return RedirectToAction(nameof(Index));
         }
+
         ViewBag.BranchId = new SelectList(await _context.Branches.ToListAsync(), "Id", "Name", course.BranchId);
         return View(course);
     }

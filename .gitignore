@@ -14,3 +14,4 @@ obj/
 
 ## Ignore logs
 logs/
+*.db

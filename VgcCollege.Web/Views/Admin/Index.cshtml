@@ -1,2 +1,74 @@
-<h1>Admin Dashboard</h1>
-<p>Welcome, Admin.</p>
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<h2>Admin Dashboard</h2>
+<p class="text-muted">Welcome, @User.Identity!.Name</p>
+<hr />
+
+<div class="row g-4 mt-2">
+
+    <div class="col-md-4">
+        <div class="card h-100 border-primary">
+            <div class="card-body">
+                <h5 class="card-title">👥 Students</h5>
+                <p class="card-text">Manage student profiles and enrolments.</p>
+                <a asp-controller="Students" asp-action="Index" class="btn btn-primary btn-sm">View Students</a>
+                <a asp-controller="Enrollments" asp-action="Create" class="btn btn-outline-primary btn-sm ms-1">Enrol Student</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 border-success">
+            <div class="card-body">
+                <h5 class="card-title">📚 Courses</h5>
+                <p class="card-text">Manage branches, courses, and staff assignments.</p>
+                <a asp-controller="Courses" asp-action="Index" class="btn btn-success btn-sm">View Courses</a>
+                <a asp-controller="Branches" asp-action="Index" class="btn btn-outline-success btn-sm ms-1">Branches</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 border-warning">
+            <div class="card-body">
+                <h5 class="card-title">👨‍🏫 Staff</h5>
+                <p class="card-text">Assign faculty members to courses.</p>
+                <a asp-controller="StaffAssignments" asp-action="Index" class="btn btn-warning btn-sm">Staff Assignments</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 border-info">
+            <div class="card-body">
+                <h5 class="card-title">✅ Attendance</h5>
+                <p class="card-text">Record and view student attendance by course.</p>
+                <a asp-controller="Attendance" asp-action="SelectCourse" class="btn btn-info btn-sm">Manage Attendance</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 border-danger">
+            <div class="card-body">
+                <h5 class="card-title">📝 Exams</h5>
+                <p class="card-text">Manage exams and release results to students.</p>
+                <a asp-controller="Exams" asp-action="Index" class="btn btn-danger btn-sm">View Exams</a>
+                <a asp-controller="Exams" asp-action="ReleaseResults" class="btn btn-outline-danger btn-sm ms-1">Release Results</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 border-secondary">
+            <div class="card-body">
+                <h5 class="card-title">📋 Enrolments</h5>
+                <p class="card-text">View and manage all course enrolments.</p>
+                <a asp-controller="Enrollments" asp-action="Index" class="btn btn-secondary btn-sm">View Enrolments</a>
+            </div>
+        </div>
+    </div>
+
+</div>

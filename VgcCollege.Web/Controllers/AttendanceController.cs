@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VgcCollege.Domain.Models;
@@ -10,20 +11,21 @@ namespace VgcCollege.Web.Controllers;
 public class AttendanceController : Controller
 {
     private readonly ApplicationDbContext _context;
+    private readonly UserManager<IdentityUser> _userManager;
 
-    public AttendanceController(ApplicationDbContext context)
+    public AttendanceController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
     {
         _context = context;
+        _userManager = userManager;
     }
 
-    // GET: Attendance/SelectCourse
     public async Task<IActionResult> SelectCourse()
     {
-        var userId = User.Identity?.Name;
-        IQueryable<Course> coursesQuery = _context.Courses;
+        IQueryable<Course> coursesQuery = _context.Courses.Include(c => c.Branch);
 
         if (!User.IsInRole("Admin"))
         {
+            var userId = _userManager.GetUserId(User);
             var faculty = await _context.FacultyProfiles
                 .FirstOrDefaultAsync(f => f.IdentityUserId == userId);
             if (faculty == null) return Forbid();
@@ -32,23 +34,24 @@ public class AttendanceController : Controller
                 .Where(fc => fc.FacultyProfileId == faculty.Id)
                 .Select(fc => fc.CourseId)
                 .ToListAsync();
+
             coursesQuery = coursesQuery.Where(c => courseIds.Contains(c.Id));
         }
 
-        var courses = await coursesQuery.ToListAsync();
+        var courses = await coursesQuery.OrderBy(c => c.Name).ToListAsync();
         return View(courses);
     }
 
-    // GET: Attendance/ByCourse/{courseId}
     public async Task<IActionResult> ByCourse(int courseId, int? weekNumber)
     {
-        var course = await _context.Courses.FindAsync(courseId);
+        var course = await _context.Courses
+            .Include(c => c.Branch)
+            .FirstOrDefaultAsync(c => c.Id == courseId);
         if (course == null) return NotFound();
 
-        // Authorization: Admin or faculty assigned to this course
-        var userId = User.Identity?.Name;
         if (!User.IsInRole("Admin"))
         {
+            var userId = _userManager.GetUserId(User);
             var faculty = await _context.FacultyProfiles
                 .FirstOrDefaultAsync(f => f.IdentityUserId == userId);
             if (faculty == null) return Forbid();
@@ -62,9 +65,9 @@ public class AttendanceController : Controller
             .Include(e => e.Student)
             .Include(e => e.AttendanceRecords)
             .Where(e => e.CourseId == courseId && e.Status == "Active")
+            .OrderBy(e => e.Student.Name)
             .ToListAsync();
 
-        // Determine max week number used so far (optional)
         var maxWeek = enrolments
             .SelectMany(e => e.AttendanceRecords)
             .Select(a => a.WeekNumber)
@@ -74,23 +77,25 @@ public class AttendanceController : Controller
         ViewBag.CourseName = course.Name;
         ViewBag.CourseId = courseId;
         ViewBag.WeekNumber = weekNumber ?? (maxWeek + 1);
-        ViewBag.AllWeeks = Enumerable.Range(1, 12).ToList(); // 12-week semester
+        ViewBag.AllWeeks = Enumerable.Range(1, 12).ToList();
 
         return View(enrolments);
     }
 
-    // POST: Attendance/Save
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Save(int courseId, int weekNumber, Dictionary<int, bool> attendance)
+    public async Task<IActionResult> Save(
+        int courseId,
+        int weekNumber,
+        List<int> presentIds,
+        List<int> allEnrolmentIds)
     {
         var course = await _context.Courses.FindAsync(courseId);
         if (course == null) return NotFound();
 
-        // Authorization check
-        var userId = User.Identity?.Name;
         if (!User.IsInRole("Admin"))
         {
+            var userId = _userManager.GetUserId(User);
             var faculty = await _context.FacultyProfiles
                 .FirstOrDefaultAsync(f => f.IdentityUserId == userId);
             if (faculty == null) return Forbid();
@@ -100,18 +105,16 @@ public class AttendanceController : Controller
             if (!isAssigned) return Forbid();
         }
 
-        // Save or update attendance records
-        foreach (var kvp in attendance)
+        foreach (var enrolmentId in allEnrolmentIds)
         {
-            var enrolmentId = kvp.Key;
-            var present = kvp.Value;
+            var present = presentIds.Contains(enrolmentId);
 
             var existing = await _context.AttendanceRecords
-                .FirstOrDefaultAsync(a => a.CourseEnrolmentId == enrolmentId && a.WeekNumber == weekNumber);
+                .FirstOrDefaultAsync(a => a.CourseEnrolmentId == enrolmentId
+                                       && a.WeekNumber == weekNumber);
             if (existing != null)
             {
                 existing.Present = present;
-                _context.Update(existing);
             }
             else
             {
@@ -125,6 +128,7 @@ public class AttendanceController : Controller
         }
 
         await _context.SaveChangesAsync();
+        TempData["Message"] = $"Attendance saved for Week {weekNumber}.";
         return RedirectToAction("ByCourse", new { courseId, weekNumber });
     }
 }

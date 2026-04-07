@@ -8,11 +8,11 @@ using VgcCollege.Web.Data;
 namespace VgcCollege.Web.Controllers;
 
 [Authorize(Roles = "Admin")]
-public class EnrolmentsController : Controller
+public class EnrollmentsController : Controller
 {
     private readonly ApplicationDbContext _context;
 
-    public EnrolmentsController(ApplicationDbContext context)
+    public EnrollmentsController(ApplicationDbContext context)
     {
         _context = context;
     }
@@ -23,6 +23,7 @@ public class EnrolmentsController : Controller
         var enrolments = await _context.CourseEnrolments
             .Include(e => e.Student)
             .Include(e => e.Course)
+            .OrderBy(e => e.Student.Name)
             .ToListAsync();
         return View(enrolments);
     }
@@ -31,34 +32,38 @@ public class EnrolmentsController : Controller
     public async Task<IActionResult> Details(int? id)
     {
         if (id == null) return NotFound();
-
         var enrolment = await _context.CourseEnrolments
             .Include(e => e.Student)
             .Include(e => e.Course)
             .FirstOrDefaultAsync(e => e.Id == id);
         if (enrolment == null) return NotFound();
-
         return View(enrolment);
     }
 
     // GET: Enrolments/Create
     public async Task<IActionResult> Create()
     {
-        ViewBag.StudentId = new SelectList(await _context.StudentProfiles.ToListAsync(), "Id", "Name");
-        ViewBag.CourseId = new SelectList(await _context.Courses.ToListAsync(), "Id", "Name");
+        await PopulateDropdowns();
         return View();
     }
 
     // POST: Enrolments/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("StudentProfileId,CourseId,EnrolDate,Status")] CourseEnrolment enrolment)
+    public async Task<IActionResult> Create([Bind("StudentProfileId,CourseId")] CourseEnrolment enrolment)
     {
+        // Remove every property not posted by the form
+        ModelState.Remove("Student");
+        ModelState.Remove("Course");
+        ModelState.Remove("AttendanceRecords");
+        ModelState.Remove("Status");
+        ModelState.Remove("EnrolDate");
+
         if (ModelState.IsValid)
         {
-            // Check for duplicate enrolment
             var exists = await _context.CourseEnrolments
-                .AnyAsync(e => e.StudentProfileId == enrolment.StudentProfileId && e.CourseId == enrolment.CourseId);
+                .AnyAsync(e => e.StudentProfileId == enrolment.StudentProfileId
+                            && e.CourseId == enrolment.CourseId);
             if (exists)
             {
                 ModelState.AddModelError("", "This student is already enrolled in this course.");
@@ -72,6 +77,7 @@ public class EnrolmentsController : Controller
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
         await PopulateDropdowns();
         return View(enrolment);
     }
@@ -80,10 +86,8 @@ public class EnrolmentsController : Controller
     public async Task<IActionResult> Edit(int? id)
     {
         if (id == null) return NotFound();
-
         var enrolment = await _context.CourseEnrolments.FindAsync(id);
         if (enrolment == null) return NotFound();
-
         await PopulateDropdowns(enrolment.StudentProfileId, enrolment.CourseId);
         return View(enrolment);
     }
@@ -95,6 +99,10 @@ public class EnrolmentsController : Controller
     {
         if (id != enrolment.Id) return NotFound();
 
+        ModelState.Remove("Student");
+        ModelState.Remove("Course");
+        ModelState.Remove("AttendanceRecords");
+
         if (ModelState.IsValid)
         {
             try
@@ -104,11 +112,12 @@ public class EnrolmentsController : Controller
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!EnrolmentExists(enrolment.Id)) return NotFound();
+                if (!_context.CourseEnrolments.Any(e => e.Id == enrolment.Id)) return NotFound();
                 else throw;
             }
             return RedirectToAction(nameof(Index));
         }
+
         await PopulateDropdowns(enrolment.StudentProfileId, enrolment.CourseId);
         return View(enrolment);
     }
@@ -117,13 +126,11 @@ public class EnrolmentsController : Controller
     public async Task<IActionResult> Delete(int? id)
     {
         if (id == null) return NotFound();
-
         var enrolment = await _context.CourseEnrolments
             .Include(e => e.Student)
             .Include(e => e.Course)
             .FirstOrDefaultAsync(e => e.Id == id);
         if (enrolment == null) return NotFound();
-
         return View(enrolment);
     }
 
@@ -143,12 +150,11 @@ public class EnrolmentsController : Controller
 
     private async Task PopulateDropdowns(int? selectedStudentId = null, int? selectedCourseId = null)
     {
-        ViewBag.StudentId = new SelectList(await _context.StudentProfiles.ToListAsync(), "Id", "Name", selectedStudentId);
-        ViewBag.CourseId = new SelectList(await _context.Courses.ToListAsync(), "Id", "Name", selectedCourseId);
-    }
-
-    private bool EnrolmentExists(int id)
-    {
-        return _context.CourseEnrolments.Any(e => e.Id == id);
+        ViewBag.StudentId = new SelectList(
+            await _context.StudentProfiles.OrderBy(s => s.Name).ToListAsync(),
+            "Id", "Name", selectedStudentId);
+        ViewBag.CourseId = new SelectList(
+            await _context.Courses.OrderBy(c => c.Name).ToListAsync(),
+            "Id", "Name", selectedCourseId);
     }
 }

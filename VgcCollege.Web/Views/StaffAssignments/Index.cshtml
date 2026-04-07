@@ -1,32 +1,55 @@
-@model IEnumerable<VgcCollege.Domain.Models.FacultyCourse>
-
+@using VgcCollege.Domain.Models
+@model List<FacultyCourse>
 @{
     ViewData["Title"] = "Staff Assignments";
 }
 
-<h1>Staff Assignments</h1>
-
+<h2>Staff Assignments</h2>
 <p>
-    <a asp-action="Create" class="btn btn-primary">Assign Faculty to Course</a>
+    <a asp-action="Create" class="btn btn-primary">+ Assign Faculty to Course</a>
 </p>
 
-<table class="table table-striped">
-<thead>
-<tr>
-<th>Faculty</th>
-<th>Course</th>
-<th>Actions</th>
-</thead>
-<tbody>
-@foreach (var item in Model)
+@if (!Model.Any())
 {
-    <tr>
-        <td>@item.Faculty?.Name</td>
-        <td>@item.Course?.Name</td>
-        <td>
-            <a asp-action="Delete" asp-route-facultyId="@item.FacultyProfileId" asp-route-courseId="@item.CourseId" class="btn btn-sm btn-danger">Remove</a>
-        </td>
-    </tr>
+    <div class="alert alert-info">No staff assignments yet.</div>
 }
-</tbody>
-</table>
+else
+{
+    <table class="table table-bordered table-sm">
+        <thead class="table-dark">
+        <tr>
+            <th>Faculty Member</th>
+            <th>Course</th>
+            <th>Branch</th>
+            <th>Role</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var a in Model)
+        {
+            <tr>
+                <td>@a.Faculty.Name</td>
+                <td>@a.Course.Name</td>
+                <td>@a.Course.Branch?.Name</td>
+                <td>
+                    @if (a.IsTutor)
+                    {
+                        <span class="badge bg-warning text-dark">Tutor</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Lecturer</span>
+                    }
+                </td>
+                <td>
+                    <a asp-action="Delete"
+                       asp-route-facultyId="@a.FacultyProfileId"
+                       asp-route-courseId="@a.CourseId"
+                       class="btn btn-sm btn-danger">Remove</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

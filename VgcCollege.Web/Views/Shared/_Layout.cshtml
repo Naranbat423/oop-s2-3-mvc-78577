@@ -9,136 +9,143 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">VgcCollege</a>
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">🎓 VGC College</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
 
-                        @if (User.Identity.IsAuthenticated)
+                        @* ── ADMIN NAV ──────────────────────────────────────── *@
+                        @if (User.IsInRole("Admin"))
                         {
-                            @if (User.IsInRole("Admin"))
-                            {
-                                <!-- Direct links for Admin -->
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Branches" asp-action="Index">Branches</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Courses" asp-action="Index">Courses</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Students" asp-action="Index">Students</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Enrolments" asp-action="Index">Enrolments</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="StaffAssignments" asp-action="Index">Staff Assignments</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Exams" asp-action="Index">Exams</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Attendance" asp-action="SelectCourse">Attendance</a>
-                                </li>
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle text-dark" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
-                                        Admin
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" asp-area="" asp-controller="Admin" asp-action="Index">Dashboard</a></li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" asp-area="" asp-controller="Branches" asp-action="Index">Manage Branches</a></li>
-                                        <li><a class="dropdown-item" asp-area="" asp-controller="Courses" asp-action="Index">Manage Courses</a></li>
-                                        <li><a class="dropdown-item" asp-area="" asp-controller="Enrolments" asp-action="Index">Manage Enrolments</a></li>
-                                        <li><a class="dropdown-item" asp-area="" asp-controller="StaffAssignments" asp-action="Index">Staff Assignments</a></li>
-                                        <li><a class="dropdown-item" asp-area="" asp-controller="Exams" asp-action="ReleaseResults">Release Exam Results</a></li>
-                                    </ul>
-                                </li>
-                            }
-                            @if (User.IsInRole("Faculty"))
-                            {
-                                <!-- Direct links for Faculty -->
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Attendance" asp-action="SelectCourse">Attendance</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Gradebook" asp-action="SelectCourse">Gradebook</a>
-                                </li>
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle text-dark" href="#" id="facultyDropdown" role="button" data-bs-toggle="dropdown">
-                                        Faculty
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" asp-area="" asp-controller="Faculty" asp-action="MyStudents">My Students</a></li>
-                                        <li><a class="dropdown-item" asp-area="" asp-controller="Faculty" asp-action="Gradebook">Gradebook</a></li>
-                                        <li><a class="dropdown-item" asp-area="" asp-controller="Faculty" asp-action="StudentContacts">Student Contacts</a></li>
-                                    </ul>
-                                </li>
-                            }
-                            @if (User.IsInRole("Student"))
-                            {
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle text-dark" href="#" id="studentDropdown" role="button" data-bs-toggle="dropdown">
-                                        Student
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" asp-area="" asp-controller="Student" asp-action="MyGrades">My Grades</a></li>
-                                        <li><a class="dropdown-item" asp-area="" asp-controller="Student" asp-action="MyAttendance">Attendance</a></li>
-                                        <li><a class="dropdown-item" asp-area="" asp-controller="Student" asp-action="ExamResults">Exam Results</a></li>
-                                    </ul>
-                                </li>
-                            }
-                        }
-                    </ul>
-
-                    <!-- Authentication links -->
-                    <ul class="navbar-nav">
-                        @if (User.Identity.IsAuthenticated)
-                        {
-                            <li class="nav-item">
-                                <span class="nav-link text-dark">Hello @User.Identity.Name!</span>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-white" href="#"
+                                   role="button" data-bs-toggle="dropdown">Students</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" asp-controller="Students" asp-action="Index">All Students</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Students" asp-action="Create">Add Student</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" asp-controller="Enrollments" asp-action="Index">Enrollments</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Enrollments" asp-action="Create">Enroll Student</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-white" href="#"
+                                   role="button" data-bs-toggle="dropdown">Courses</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" asp-controller="Branches" asp-action="Index">Branches</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Courses" asp-action="Index">Courses</a></li>
+                                    <li><a class="dropdown-item" asp-controller="StaffAssignments" asp-action="Index">Staff Assignments</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-white" href="#"
+                                   role="button" data-bs-toggle="dropdown">Academic</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" asp-controller="Exams" asp-action="Index">Exams</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Exams" asp-action="ReleaseResults">Release Results</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" asp-controller="Attendance" asp-action="SelectCourse">Attendance</a></li>
+                                </ul>
                             </li>
                             <li class="nav-item">
-                                <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
-                                    <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+                                <a class="nav-link text-white" asp-controller="Admin" asp-action="Index">Dashboard</a>
+                            </li>
+                        }
+
+                        @* ── FACULTY NAV ────────────────────────────────────── *@
+                        @if (User.IsInRole("Faculty"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-white" asp-controller="Faculty" asp-action="MyStudents">My Students</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-white" asp-controller="Gradebook" asp-action="SelectCourse">Gradebook</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-white" asp-controller="Attendance" asp-action="SelectCourse">Attendance</a>
+                            </li>
+                        }
+
+                        @* ── STUDENT NAV ────────────────────────────────────── *@
+                        @if (User.IsInRole("Student"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-white" asp-controller="Student" asp-action="MyProfile">My Profile</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-white" asp-controller="Student" asp-action="MyGrades">My Grades</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-white" asp-controller="Student" asp-action="MyAttendance">My Attendance</a>
+                            </li>
+                        }
+
+                    </ul>
+
+                    @* ── AUTH LINKS ─────────────────────────────────────────── *@
+                    <ul class="navbar-nav">
+                        @if (User.Identity!.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <span class="nav-link text-white-50">
+                                    @if (User.IsInRole("Admin")) { <span class="badge bg-danger me-1">Admin</span> }
+                                    @if (User.IsInRole("Faculty")) { <span class="badge bg-warning text-dark me-1">Faculty</span> }
+                                    @if (User.IsInRole("Student")) { <span class="badge bg-success me-1">Student</span> }
+                                    @User.Identity.Name
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <form asp-area="Identity" asp-page="/Account/Logout"
+                                      asp-route-returnUrl="@Url.Action("Index", "Home")" method="post">
+                                    <button type="submit" class="nav-link btn btn-link text-white">Logout</button>
                                 </form>
                             </li>
                         }
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
+                                <a class="nav-link text-white" asp-area="Identity" asp-page="/Account/Login">Login</a>
                             </li>
                         }
                     </ul>
+
                 </div>
             </div>
         </nav>
     </header>
+
     <div class="container">
+        @* TempData alert — shown after actions like release results toggle *@
+        @if (TempData["Message"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["Message"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - VgcCollege - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer class="border-top footer text-muted mt-4">
+        <div class="container py-2">
+            &copy; 2026 - VGC College
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

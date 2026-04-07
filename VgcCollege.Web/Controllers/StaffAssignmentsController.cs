@@ -23,6 +23,8 @@ public class StaffAssignmentsController : Controller
         var assignments = await _context.FacultyCourses
             .Include(fc => fc.Faculty)
             .Include(fc => fc.Course)
+                .ThenInclude(c => c.Branch)
+            .OrderBy(fc => fc.Faculty.Name)
             .ToListAsync();
         return View(assignments);
     }
@@ -30,21 +32,24 @@ public class StaffAssignmentsController : Controller
     // GET: StaffAssignments/Create
     public async Task<IActionResult> Create()
     {
-        ViewBag.FacultyId = new SelectList(await _context.FacultyProfiles.ToListAsync(), "Id", "Name");
-        ViewBag.CourseId = new SelectList(await _context.Courses.ToListAsync(), "Id", "Name");
+        await PopulateDropdowns();
         return View();
     }
 
     // POST: StaffAssignments/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("FacultyProfileId,CourseId")] FacultyCourse assignment)
+    public async Task<IActionResult> Create([Bind("FacultyProfileId,CourseId,IsTutor")] FacultyCourse assignment)
     {
+        // Remove navigation properties from ModelState — they are not posted by the form
+        ModelState.Remove("Faculty");
+        ModelState.Remove("Course");
+
         if (ModelState.IsValid)
         {
-            // Check for duplicate assignment
             var exists = await _context.FacultyCourses
-                .AnyAsync(fc => fc.FacultyProfileId == assignment.FacultyProfileId && fc.CourseId == assignment.CourseId);
+                .AnyAsync(fc => fc.FacultyProfileId == assignment.FacultyProfileId
+                             && fc.CourseId == assignment.CourseId);
             if (exists)
             {
                 ModelState.AddModelError("", "This faculty member is already assigned to this course.");
@@ -56,11 +61,12 @@ public class StaffAssignmentsController : Controller
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
         await PopulateDropdowns();
         return View(assignment);
     }
 
-    // GET: StaffAssignments/Delete/5
+    // GET: StaffAssignments/Delete?facultyId=1&courseId=2
     public async Task<IActionResult> Delete(int? facultyId, int? courseId)
     {
         if (facultyId == null || courseId == null) return NotFound();
@@ -68,7 +74,9 @@ public class StaffAssignmentsController : Controller
         var assignment = await _context.FacultyCourses
             .Include(fc => fc.Faculty)
             .Include(fc => fc.Course)
-            .FirstOrDefaultAsync(fc => fc.FacultyProfileId == facultyId && fc.CourseId == courseId);
+                .ThenInclude(c => c.Branch)
+            .FirstOrDefaultAsync(fc => fc.FacultyProfileId == facultyId
+                                    && fc.CourseId == courseId);
         if (assignment == null) return NotFound();
 
         return View(assignment);
@@ -80,7 +88,8 @@ public class StaffAssignmentsController : Controller
     public async Task<IActionResult> DeleteConfirmed(int facultyId, int courseId)
     {
         var assignment = await _context.FacultyCourses
-            .FirstOrDefaultAsync(fc => fc.FacultyProfileId == facultyId && fc.CourseId == courseId);
+            .FirstOrDefaultAsync(fc => fc.FacultyProfileId == facultyId
+                                    && fc.CourseId == courseId);
         if (assignment != null)
         {
             _context.FacultyCourses.Remove(assignment);
@@ -89,9 +98,13 @@ public class StaffAssignmentsController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    private async Task PopulateDropdowns()
+    private async Task PopulateDropdowns(int? selectedFaculty = null, int? selectedCourse = null)
     {
-        ViewBag.FacultyId = new SelectList(await _context.FacultyProfiles.ToListAsync(), "Id", "Name");
-        ViewBag.CourseId = new SelectList(await _context.Courses.ToListAsync(), "Id", "Name");
+        ViewBag.FacultyId = new SelectList(
+            await _context.FacultyProfiles.OrderBy(f => f.Name).ToListAsync(),
+            "Id", "Name", selectedFaculty);
+        ViewBag.CourseId = new SelectList(
+            await _context.Courses.OrderBy(c => c.Name).ToListAsync(),
+            "Id", "Name", selectedCourse);
     }
 }

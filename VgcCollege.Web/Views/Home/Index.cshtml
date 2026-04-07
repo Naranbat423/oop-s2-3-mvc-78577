@@ -1,8 +1,23 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@if (!User.Identity!.IsAuthenticated)
+{
+    <div class="text-center py-5">
+        <h1 class="display-4">🎓 VGC College</h1>
+        <p class="lead">Multi-Branch Student & Course Management System</p>
+        <hr class="my-4" />
+        <p>Please log in to access the system.</p>
+        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary btn-lg">Login</a>
+    </div>
+}
+else
+{
+    @* Logged-in users are redirected by HomeController — this is a fallback *@
+    <div class="text-center py-5">
+        <h2>Welcome to VGC College</h2>
+        <p class="text-muted">Redirecting you to your dashboard...</p>
+        <script>window.location.href = "/";</script>
+    </div>
+}
