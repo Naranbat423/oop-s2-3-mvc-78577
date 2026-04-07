@@ -15,3 +15,4 @@ obj/
 ## Ignore logs
 logs/
 *.db
+*.db
