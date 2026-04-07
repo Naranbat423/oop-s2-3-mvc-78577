@@ -1,46 +1,63 @@
-@model Tuple<IEnumerable<VgcCollege.Domain.Models.CourseEnrolment>, Dictionary<int, VgcCollege.Domain.Models.AssignmentResult>>
+@model Tuple<List<VgcCollege.Domain.Models.CourseEnrolment>, Dictionary<int, VgcCollege.Domain.Models.AssignmentResult>>
 
 @{
     var enrolments = Model.Item1;
     var results = Model.Item2;
     var assignment = ViewBag.Assignment as VgcCollege.Domain.Models.Assignment;
-    ViewData["Title"] = $"Gradebook - {assignment?.Title}";
+    ViewData["Title"] = $"Results - {assignment?.Title}";
 }
 
-<h1>@assignment?.Title</h1>
-<p><strong>Max Score:</strong>
+<h2>@assignment?.Title</h2>
+<p class="text-muted">
+    <strong>Course:</strong> @assignment?.Course?.Name &nbsp;|&nbsp;
+    <strong>Max Score:</strong> @assignment?.MaxScore &nbsp;|&nbsp;
+    <strong>Due:</strong> @assignment?.DueDate.ToString("dd MMM yyyy")
+</p>
+
 @if (assignment != null)
 {
-    @assignment.MaxScore@:</p>
-
     <form method="post" asp-action="SaveResults">
-        <input type="hidden" name="assignmentId" value="@assignment.Id"/>
-        <table class="table table-striped">
-            <thead>
-            <tr>
-            <th>Student</th>
-            <th>Score</th>
-            <th>Feedback</th>
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="assignmentId" value="@assignment.Id" />
+
+        <table class="table table-bordered table-sm">
+            <thead class="table-dark">
+                <tr>
+                    <th>Student</th>
+                    <th style="width:130px">Score (max @assignment.MaxScore)</th>
+                    <th>Feedback</th>
+                </tr>
             </thead>
             <tbody>
-            @foreach (var enrolment in enrolments)
-            {
-                var result = results.ContainsKey(enrolment.StudentProfileId) ? results[enrolment.StudentProfileId] : null;
-                <tr>
-                    <td>@enrolment.Student.Name</td>
-                    <td>
-                        <input type="number" name="scores[@enrolment.StudentProfileId]" value="@(result?.Score ?? 0)" class="form-control" style="width:100px" min="0" max="@assignment.MaxScore"/>
-                    </td>
-                    <td>
-                        <input type="text" name="feedbacks[@enrolment.StudentProfileId]" value="@(result?.Feedback ?? "")" class="form-control"/>
-                    </td>
-                </tr>
-            }
+                @foreach (var enrolment in enrolments)
+                {
+                    var result = results.ContainsKey(enrolment.StudentProfileId)
+                        ? results[enrolment.StudentProfileId]
+                        : null;
+                    <tr>
+                        <td>@enrolment.Student.Name</td>
+                        <td>
+                            <input type="number"
+                                   name="scores[@enrolment.StudentProfileId]"
+                                   value="@(result?.Score ?? 0)"
+                                   class="form-control form-control-sm"
+                                   min="0"
+                                   max="@assignment.MaxScore" />
+                        </td>
+                        <td>
+                            <input type="text"
+                                   name="feedbacks[@enrolment.StudentProfileId]"
+                                   value="@(result?.Feedback ?? "")"
+                                   class="form-control form-control-sm" />
+                        </td>
+                    </tr>
+                }
             </tbody>
         </table>
-        <button type="submit" class="btn btn-success">Save All</button>
-        <a asp-action="Assignments" asp-route-courseId="@assignment.CourseId" class="btn btn-secondary">Back to Assignments</a>
+
+        <button type="submit" class="btn btn-success">Save All Results</button>
+        <a asp-action="Assignments"
+           asp-route-courseId="@assignment.CourseId"
+           class="btn btn-secondary ms-2">← Back to Assignments</a>
     </form>
 }
-
-    

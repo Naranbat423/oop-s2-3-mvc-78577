@@ -110,10 +110,7 @@ public class GradebookController : Controller
     // POST: Gradebook/SaveResults
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> SaveResults(
-        int assignmentId,
-        Dictionary<int, int> scores,
-        Dictionary<int, string> feedbacks)
+    public async Task<IActionResult> SaveResults(int assignmentId)
     {
         var faculty = await GetCurrentFacultyAsync();
         if (faculty == null) return Forbid();
@@ -121,21 +118,28 @@ public class GradebookController : Controller
         var assignment = await _context.Assignments.FindAsync(assignmentId);
         if (assignment == null) return NotFound();
 
-        // Server-side: faculty must teach this course
         var teaches = await _context.FacultyCourses
             .AnyAsync(fc => fc.FacultyProfileId == faculty.Id
                          && fc.CourseId == assignment.CourseId);
         if (!teaches) return Forbid();
 
-        foreach (var kvp in scores)
-        {
-            var studentId = kvp.Key;
-            var score = kvp.Value;
+        // Parse scores and feedbacks directly from the raw form
+        // Form keys look like: scores[42], feedbacks[42]
+        var form = Request.Form;
+        var scoreKeys = form.Keys.Where(k => k.StartsWith("scores[")).ToList();
 
-            // Clamp score so it never exceeds MaxScore (server-side enforcement)
+        foreach (var key in scoreKeys)
+        {
+            // Extract student ID from key like "scores[42]"
+            var idStr = key.Replace("scores[", "").Replace("]", "");
+            if (!int.TryParse(idStr, out int studentId)) continue;
+            if (!int.TryParse(form[key], out int score)) continue;
+
+            // Clamp score to valid range
             score = Math.Max(0, Math.Min(score, assignment.MaxScore));
 
-            var feedback = feedbacks.GetValueOrDefault(studentId, "");
+            var feedbackKey = $"feedbacks[{studentId}]";
+            var feedback = form.ContainsKey(feedbackKey) ? form[feedbackKey].ToString() : "";
 
             var existing = await _context.AssignmentResults
                 .FirstOrDefaultAsync(r => r.AssignmentId == assignmentId
@@ -158,6 +162,7 @@ public class GradebookController : Controller
         }
 
         await _context.SaveChangesAsync();
+        TempData["Message"] = "Results saved successfully.";
         return RedirectToAction("Results", new { assignmentId });
     }
 }

@@ -16,16 +16,12 @@ public class StudentsController : Controller
         _context = context;
     }
 
-    // GET: Students
     public async Task<IActionResult> Index()
     {
-        var students = await _context.StudentProfiles
-            .OrderBy(s => s.Name)
-            .ToListAsync();
+        var students = await _context.StudentProfiles.OrderBy(s => s.Name).ToListAsync();
         return View(students);
     }
 
-    // GET: Students/Details/5
     public async Task<IActionResult> Details(int? id)
     {
         if (id == null) return NotFound();
@@ -34,15 +30,12 @@ public class StudentsController : Controller
         return View(student);
     }
 
-    // GET: Students/Create
     public IActionResult Create() => View();
 
-    // POST: Students/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create([Bind("StudentNumber,Name,Email,Phone,Address,DOB")] StudentProfile student)
     {
-        // Navigation properties are not posted — remove them from ModelState
         ModelState.Remove("IdentityUser");
         ModelState.Remove("IdentityUserId");
         ModelState.Remove("Enrolments");
@@ -51,9 +44,9 @@ public class StudentsController : Controller
 
         if (ModelState.IsValid)
         {
-            // IdentityUserId left empty — admin creates profile,
-            // can be linked to a login account later via seed or manually
-            student.IdentityUserId = "";
+            // Set to null — admin-created profiles have no login account yet
+            // SQLite will store NULL which does not violate the FK constraint
+            student.IdentityUserId = null!;
             _context.Add(student);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
@@ -61,7 +54,6 @@ public class StudentsController : Controller
         return View(student);
     }
 
-    // GET: Students/Edit/5
     public async Task<IActionResult> Edit(int? id)
     {
         if (id == null) return NotFound();
@@ -70,7 +62,6 @@ public class StudentsController : Controller
         return View(student);
     }
 
-    // POST: Students/Edit/5
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, [Bind("Id,IdentityUserId,StudentNumber,Name,Email,Phone,Address,DOB")] StudentProfile student)
@@ -99,7 +90,6 @@ public class StudentsController : Controller
         return View(student);
     }
 
-    // GET: Students/Delete/5
     public async Task<IActionResult> Delete(int? id)
     {
         if (id == null) return NotFound();
@@ -108,7 +98,6 @@ public class StudentsController : Controller
         return View(student);
     }
 
-    // POST: Students/Delete/5
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)

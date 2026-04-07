@@ -4,35 +4,51 @@
     ViewData["Title"] = "Edit Enrolment";
 }
 
-<h2>Edit Enrollment</h2>
+<h2>Edit Enrolment</h2>
 <hr />
 
 <div class="row">
     <div class="col-md-5">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        <form asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
             <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="EnrolDate" />
 
             <div class="form-group mb-3">
-                <label asp-for="StudentProfileId" class="control-label">Student</label>
-                <select asp-for="StudentProfileId" class="form-control" asp-items="ViewBag.StudentId">
+                <label class="control-label">Student</label>
+                <select name="StudentProfileId" class="form-control" asp-items="ViewBag.StudentId">
                     <option value="">-- Select Student --</option>
                 </select>
             </div>
 
             <div class="form-group mb-3">
-                <label asp-for="CourseId" class="control-label">Course</label>
-                <select asp-for="CourseId" class="form-control" asp-items="ViewBag.CourseId">
+                <label class="control-label">Course</label>
+                <select name="CourseId" class="form-control" asp-items="ViewBag.CourseId">
                     <option value="">-- Select Course --</option>
                 </select>
             </div>
 
             <div class="form-group mb-3">
-                <label asp-for="Status" class="control-label">Status</label>
-                <select asp-for="Status" class="form-control">
-                    <option value="Active">Active</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Dropped">Dropped</option>
+                <label class="control-label">Status</label>
+                <select name="Status" class="form-control">
+                    @if (Model.Status == "Active")
+                    {
+                        <option value="Active" selected="selected">Active</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Dropped">Dropped</option>
+                    }
+                    else if (Model.Status == "Completed")
+                    {
+                        <option value="Active">Active</option>
+                        <option value="Completed" selected="selected">Completed</option>
+                        <option value="Dropped">Dropped</option>
+                    }
+                    else
+                    {
+                        <option value="Active">Active</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Dropped" selected="selected">Dropped</option>
+                    }
                 </select>
             </div>
 
@@ -43,7 +59,3 @@
         </form>
     </div>
 </div>
-
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}

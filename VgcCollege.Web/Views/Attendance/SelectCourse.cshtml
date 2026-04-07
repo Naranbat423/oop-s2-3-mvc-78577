@@ -1,24 +1,38 @@
 @model IEnumerable<VgcCollege.Domain.Models.Course>
 
 @{
-    ViewData["Title"] = "Select Course";
+    ViewData["Title"] = "Select Course - Attendance";
 }
 
-<h1>Select a Course for Attendance</h1>
+<h2>Attendance — Select a Course</h2>
 
-<table class="table table-striped">
-    <thead>
-    <tr>
-    <th>Course Name</th>
-    <th>Action</th>
-    </thead>
-    <tbody>
-    @foreach (var course in Model)
-    {
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No courses assigned to you.</div>
+}
+else
+{
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
         <tr>
-            <td>@course.Name</td>
-            <td><a asp-action="ByCourse" asp-route-courseId="@course.Id" class="btn btn-primary">Take Attendance</a></td>
+            <th>Course</th>
+            <th>Branch</th>
+            <th>Action</th>
         </tr>
-    }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+        @foreach (var course in Model)
+        {
+            <tr>
+                <td>@course.Name</td>
+                <td>@course.Branch?.Name</td>
+                <td>
+                    <a asp-action="ByCourse"
+                       asp-route-courseId="@course.Id"
+                       class="btn btn-sm btn-primary">Take Attendance</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

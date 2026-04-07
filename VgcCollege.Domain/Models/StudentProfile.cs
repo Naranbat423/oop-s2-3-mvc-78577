@@ -7,19 +7,19 @@ public class StudentProfile
 {
     public int Id { get; set; }
 
-    [Required]
-    public string IdentityUserId { get; set; } = "";
+    // Nullable — admin-created profiles may not have a linked login account
+    public string? IdentityUserId { get; set; }
 
     [Required(ErrorMessage = "Name is required.")]
-    [MaxLength(100, ErrorMessage = "Name cannot exceed 100 characters.")]
+    [MaxLength(100)]
     public string Name { get; set; } = "";
 
     [Required(ErrorMessage = "Email is required.")]
-    [EmailAddress(ErrorMessage = "Enter a valid email address.")]
+    [EmailAddress]
     [MaxLength(150)]
     public string Email { get; set; } = "";
 
-    [Phone(ErrorMessage = "Enter a valid phone number.")]
+    [Phone]
     [MaxLength(20)]
     public string Phone { get; set; } = "";
 
@@ -36,7 +36,7 @@ public class StudentProfile
     public string StudentNumber { get; set; } = "";
 
     // Navigation
-    public IdentityUser IdentityUser { get; set; } = null!;
+    public IdentityUser? IdentityUser { get; set; }
     public ICollection<CourseEnrolment> Enrolments { get; set; } = new List<CourseEnrolment>();
     public ICollection<AssignmentResult> AssignmentResults { get; set; } = new List<AssignmentResult>();
     public ICollection<ExamResult> ExamResults { get; set; } = new List<ExamResult>();

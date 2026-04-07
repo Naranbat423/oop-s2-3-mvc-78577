@@ -17,7 +17,6 @@ public class EnrollmentsController : Controller
         _context = context;
     }
 
-    // GET: Enrolments
     public async Task<IActionResult> Index()
     {
         var enrolments = await _context.CourseEnrolments
@@ -28,7 +27,6 @@ public class EnrollmentsController : Controller
         return View(enrolments);
     }
 
-    // GET: Enrolments/Details/5
     public async Task<IActionResult> Details(int? id)
     {
         if (id == null) return NotFound();
@@ -40,49 +38,47 @@ public class EnrollmentsController : Controller
         return View(enrolment);
     }
 
-    // GET: Enrolments/Create
     public async Task<IActionResult> Create()
     {
         await PopulateDropdowns();
         return View();
     }
 
-    // POST: Enrolments/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create([Bind("StudentProfileId,CourseId")] CourseEnrolment enrolment)
     {
-        // Remove every property not posted by the form
-        ModelState.Remove("Student");
-        ModelState.Remove("Course");
-        ModelState.Remove("AttendanceRecords");
-        ModelState.Remove("Status");
-        ModelState.Remove("EnrolDate");
+        var errors = new List<string>();
 
-        if (ModelState.IsValid)
+        if (enrolment.StudentProfileId == 0)
+            errors.Add("Please select a student.");
+        if (enrolment.CourseId == 0)
+            errors.Add("Please select a course.");
+
+        if (enrolment.StudentProfileId > 0 && enrolment.CourseId > 0)
         {
-            var exists = await _context.CourseEnrolments
+            var duplicate = await _context.CourseEnrolments
                 .AnyAsync(e => e.StudentProfileId == enrolment.StudentProfileId
                             && e.CourseId == enrolment.CourseId);
-            if (exists)
-            {
-                ModelState.AddModelError("", "This student is already enrolled in this course.");
-                await PopulateDropdowns();
-                return View(enrolment);
-            }
-
-            enrolment.EnrolDate = DateTime.Today;
-            enrolment.Status = "Active";
-            _context.Add(enrolment);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            if (duplicate)
+                errors.Add("This student is already enrolled in this course.");
         }
 
-        await PopulateDropdowns();
-        return View(enrolment);
+        if (errors.Any())
+        {
+            foreach (var err in errors)
+                ModelState.AddModelError("", err);
+            await PopulateDropdowns();
+            return View(enrolment);
+        }
+
+        enrolment.EnrolDate = DateTime.Today;
+        enrolment.Status = "Active";
+        _context.CourseEnrolments.Add(enrolment);
+        await _context.SaveChangesAsync();
+        return RedirectToAction(nameof(Index));
     }
 
-    // GET: Enrolments/Edit/5
     public async Task<IActionResult> Edit(int? id)
     {
         if (id == null) return NotFound();
@@ -92,7 +88,6 @@ public class EnrollmentsController : Controller
         return View(enrolment);
     }
 
-    // POST: Enrolments/Edit/5
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, [Bind("Id,StudentProfileId,CourseId,EnrolDate,Status")] CourseEnrolment enrolment)
@@ -122,7 +117,6 @@ public class EnrollmentsController : Controller
         return View(enrolment);
     }
 
-    // GET: Enrolments/Delete/5
     public async Task<IActionResult> Delete(int? id)
     {
         if (id == null) return NotFound();
@@ -134,7 +128,6 @@ public class EnrollmentsController : Controller
         return View(enrolment);
     }
 
-    // POST: Enrolments/Delete/5
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)

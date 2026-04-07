@@ -2,32 +2,45 @@
 
 @{
     ViewData["Title"] = "Assignments";
-    int courseId = ViewBag.CourseId;
+    var course = ViewBag.Course as VgcCollege.Domain.Models.Course;
 }
 
-<h1>Assignments</h1>
+<h2>Assignments — @course?.Name</h2>
+<p class="text-muted">Click "Enter/View Results" to record student scores.</p>
 
 <p>
-    <a asp-action="SelectCourse" class="btn btn-secondary">Back to Courses</a>
+    <a asp-action="SelectCourse" class="btn btn-secondary">← Back to Courses</a>
 </p>
 
-<table class="table">
-    <thead>
-    <tr>
-    <th>Title</th>
-    <th>Max Score</th>
-    <th>Due Date</th>
-    <th>Actions</th>
-    </thead>
-    <tbody>
-    @foreach (var assignment in Model)
-    {
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No assignments found for this course.</div>
+}
+else
+{
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
         <tr>
-            <td>@assignment.Title</td>
-            <td>@assignment.MaxScore</td>
-            <td>@assignment.DueDate.ToShortDateString()</td>
-            <td><a asp-action="Results" asp-route-assignmentId="@assignment.Id" class="btn btn-primary">Enter/View Results</a></td>
+            <th>Title</th>
+            <th>Max Score</th>
+            <th>Due Date</th>
+            <th>Actions</th>
         </tr>
-    }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+        @foreach (var assignment in Model)
+        {
+            <tr>
+                <td>@assignment.Title</td>
+                <td>@assignment.MaxScore</td>
+                <td>@assignment.DueDate.ToString("dd MMM yyyy")</td>
+                <td>
+                    <a asp-action="Results"
+                       asp-route-assignmentId="@assignment.Id"
+                       class="btn btn-sm btn-primary">Enter / View Results</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
